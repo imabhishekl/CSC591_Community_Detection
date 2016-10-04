@@ -38,7 +38,7 @@ class Tree:
 	def count_vertices_and_edges(self,edges_list,nodes_list):
 		lca_node = None
 		for edge in edges_list:
-			lca_node = self.findLCA_Node(next(x for x in nodes_list if x.name == edge[0]),next(y for y in nodes_list if y.name == edge[1]))
+			lca_node = self.findLCA_Node(next((x for x in nodes_list if x.name == edge[0]),None),next((y for y in nodes_list if y.name == edge[1]),None))
 			if lca_node is not None:
 				lca_node.num_edges = lca_node.num_edges + 1
 
@@ -94,11 +94,30 @@ def SetUnion(x,y):
         r.vertices.extend(y.vertices)
         return r
         
+graph_file = open("/home/abhishek/github_repo/CSC591_Community_Detection/amazon/amazon.graph.small")
+
+edges = graph_file.read().splitlines()
+
+vertices = []
+print "Create vertex"
+for edge in edges:
+    vert = edge.split(" ")
+    if vert[0] not in vertices:
+        vertices.append(str(vert[0]))
+    if vert[1] not in vertices:
+        vertices.append(str(vert[1]))
+
+print "Done creating edges"
+
+edges = map(lambda x:(x.split(" ")[0],x.split(" ")[1]),edges)
+
 G = nx.Graph()
 nodes = list(range(1,19))
-G.add_nodes_from(nodes)
-G.add_edges_from([(8,10),(9,10),(11,13),(12,13),(13,3),(10,2),(10,3),(2,1),(2,7),(2,4),(2,3),(3,1),(3,7),(3,5),(3,4),
-                  (7,1),(7,6),(7,5),(7,4),(4,5),(1,6),(1,5),(5,6),(5,16),(6,17),(17,18),(16,15),(16,14),(15,14)])
+G.add_nodes_from(vertices)
+#G.add_edges_from([(8,10),(9,10),(11,13),(12,13),(13,3),(10,2),(10,3),(2,1),(2,7),(2,4),(2,3),(3,1),(3,7),(3,5),(3,4),
+ #                 (7,1),(7,6),(7,5),(7,4),(4,5),(1,6),(1,5),(5,6),(5,16),(6,17),(17,18),(16,15),(16,14),(15,14)])
+
+G.add_edges_from(edges)
 
 A = nx.adjacency_matrix(G)
 adj_matrix = A.todense()
@@ -106,9 +125,9 @@ adj_matrix = A.todense()
 M = np.zeros(adj_matrix.shape)
 
 row, col = adj_matrix.shape
-
-for x in range(0,row):
-    for y in range(x,col):
+print "done0"
+for x in xrange(0,row):
+    for y in xrange(x,col):
         M[x][y] = round((1 - distance.cosine(adj_matrix[:,x], adj_matrix[:,y])),2)        
 
 tuples = []    
@@ -116,14 +135,14 @@ for (x,y), value in np.ndenumerate(M):
     if value!=0 and x!=y:
         tuples.append(((x+1,y+1),value))
    
-
 C = sorted(tuples, key=lambda x: x[1])
-
+print "done"
 t = np.count_nonzero(adj_matrix)
 print(t)
 C = C[-t:]
 
-print(C)
+#print(C)
+print 'C done'
 
 ln = len(C)
 ln = ln-1
@@ -155,4 +174,4 @@ for i in range(ln, -1, -1):
 tree.count_vertices_and_edges(G.edges(),nodes)
 tree.count_vertices_and_edges_wrap(tree.root)
 tree.compute_density(tree.root)
-tree.extract_sub_graph(tree.root,0.75)
+tree.extract_sub_graph(tree.root,0.5)
