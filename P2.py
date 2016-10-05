@@ -7,9 +7,9 @@ class Node:
         self.name = name
         self.left = None
         self.right = None
-        self.parent = self
+        self.parent = None
         self.num_edges = 0
-        self.vertices = []
+        self.vertices = set()
         self.density = 0
         
         
@@ -20,14 +20,14 @@ class Tree:
 	def findLCA_Node(self,src_node,dest_node):
 		while src_node is not None:
 			if dest_node.name in src_node.vertices:
-				return dest_node
+				return src_node
 			src_node = src_node.parent
 		return None
 
 	def print_Tree(self,root):
 		if root==None:
 			return
-		print(root.vertices)
+		#print(root.vertices)
 		self.print_Tree(root.left)
 		self.print_Tree(root.right)
 
@@ -36,11 +36,16 @@ class Tree:
 			print(nodes[i].name,nodes[i].parent.name)
 
 	def count_vertices_and_edges(self,edges_list,nodes_list):
-		lca_node = None
 		for edge in edges_list:
-			lca_node = self.findLCA_Node(next((x for x in nodes_list if x.name == edge[0]),None),next((y for y in nodes_list if y.name == edge[1]),None))
+			src_node = filter(lambda x: x.name == edge[0], nodes_list)
+			dst_node = filter(lambda x: x.name == edge[1],nodes_list)
+			lca_node = None
+			if len(src_node)!=0 and len(dst_node)!=0:
+				lca_node = self.findLCA_Node( src_node[0], dst_node[0] )
+			#lca_node = self.findLCA_Node(next((x for x in nodes_list if x.name == edge[0]),None),next((y for y in nodes_list if y.name == edge[1]),None))
 			if lca_node is not None:
 				lca_node.num_edges = lca_node.num_edges + 1
+				print "lca:" + str(lca_node.num_edges)
 
 	def count_vertices_and_edges_wrap(self,root):
 		if root.left != None and root.right != None:
@@ -52,8 +57,8 @@ class Tree:
 	def compute_density(self,root):
 		if root.left is None and root.right is None:
 			return 
-
 		total_vertices = float(len(root.vertices))
+		print "compute : " + str(total_vertices)
 		max_vertices = total_vertices*(total_vertices - 1)/2
 		root.density = root.num_edges/max_vertices
 
@@ -63,7 +68,7 @@ class Tree:
 	def extract_sub_graph(self,root,min_density):
 		if root is None:
 			return
-
+		print root.density
 		if root.density > min_density:
 			print root.vertices
 		else:
@@ -71,28 +76,25 @@ class Tree:
 			self.extract_sub_graph(root.right,min_density)
 
 def MakeSet(r):
-	r.parent = r
-	r.vertices.append(r.name)
+	r.parent = None
+	r.vertices.add(r.name)
 	
 
 def SetFind(r):
-	while r.parent!=r:
+	while r.parent is not None:
 		r = r.parent
 	return r
 
 def SetUnion(x,y):
-    xRoot = x.parent
-    yRoot =y.parent
-    
-    if xRoot.name != yRoot.name:
-        r = Node("P"+ str(x.name) + str(y.name))
-        r.left = x
-        r.right = y
-        x.parent = r
-        y.parent = r
-        r.vertices.extend(x.vertices)
-        r.vertices.extend(y.vertices)
-        return r
+    r = Node("P"+ str(x.name) + str(y.name))
+    r.left = x
+    r.right = y
+    x.parent = r
+    y.parent = r
+    r.vertices = r.vertices.union(x.vertices,y.vertices)
+        #r.vertices.extend(x.vertices)
+        #r.vertices.extend(y.vertices)
+    return r
         
 graph_file = open("/home/abhishek/github_repo/CSC591_Community_Detection/amazon/amazon.graph.small")
 
@@ -103,19 +105,19 @@ print "Create vertex"
 for edge in edges:
     vert = edge.split(" ")
     if vert[0] not in vertices:
-        vertices.append(str(vert[0]))
+        vertices.append(int(vert[0]))
     if vert[1] not in vertices:
-        vertices.append(str(vert[1]))
+        vertices.append(int(vert[1]))
 
 print "Done creating edges"
 
-edges = map(lambda x:(x.split(" ")[0],x.split(" ")[1]),edges)
+edges = map(lambda x:(int(x.split(" ")[0]),int(x.split(" ")[1])),edges)
 
 G = nx.Graph()
-nodes = list(range(1,19))
+#nodes = list(range(1,19))
 G.add_nodes_from(vertices)
 #G.add_edges_from([(8,10),(9,10),(11,13),(12,13),(13,3),(10,2),(10,3),(2,1),(2,7),(2,4),(2,3),(3,1),(3,7),(3,5),(3,4),
- #                 (7,1),(7,6),(7,5),(7,4),(4,5),(1,6),(1,5),(5,6),(5,16),(6,17),(17,18),(16,15),(16,14),(15,14)])
+#                 (7,1),(7,6),(7,5),(7,4),(4,5),(1,6),(1,5),(5,6),(5,16),(6,17),(17,18),(16,15),(16,14),(15,14)])
 
 G.add_edges_from(edges)
 
@@ -170,7 +172,7 @@ for i in range(ln, -1, -1):
         tree.root = SetUnion(ri,rj)
         
 #tree.print_Tree(tree.root)
-
+tree.root.parent = None
 tree.count_vertices_and_edges(G.edges(),nodes)
 tree.count_vertices_and_edges_wrap(tree.root)
 tree.compute_density(tree.root)
