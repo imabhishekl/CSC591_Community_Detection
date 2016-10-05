@@ -85,7 +85,7 @@ def SetUnion(x,y):
     r.vertices= r.vertices.union(x.vertices,y.vertices)        
     return r
         
-graph_file = open("./amazon/amazon.graph.small")
+graph_file = open("/home/abhishek/github_repo/CSC591_Community_Detection/amazon/amazon.graph.small")
 
 edges = graph_file.read().splitlines()
 
@@ -166,4 +166,4 @@ for i in range(ln, -1, -1):
 tree.count_vertices_and_edges(G.edges(),nodes)
 tree.count_vertices_and_edges_wrap(tree.root)
 tree.compute_density(tree.root)
-tree.extract_sub_graph(tree.root,0.5)
+tree.extract_sub_graph(tree.root,0.75)
