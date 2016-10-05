@@ -94,11 +94,12 @@ def SetUnion(x,y):
         #r.vertices.extend(y.vertices)
     return r
         
-if len(sys.argv) != 2:
-	print "Please pass command line argument for file name"
+if len(sys.argv) != 3:
+	print "Please pass command line argument for file name and the density_min value"
 	exit(0)
 
 graph_file = open(sys.argv[1])
+density_min = float(sys.argv[2])
 
 edges = graph_file.read().splitlines()
 
@@ -179,5 +180,5 @@ tree.root.parent = None
 tree.count_vertices_and_edges(G.edges(),nodes)
 tree.count_vertices_and_edges_wrap(tree.root)
 tree.compute_density(tree.root)
-tree.extract_sub_graph(tree.root,0.75)
+tree.extract_sub_graph(tree.root,density_min)
 print "Done."
