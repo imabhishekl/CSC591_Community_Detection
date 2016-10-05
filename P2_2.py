@@ -1,6 +1,7 @@
 import numpy as np
 import networkx as nx
 from scipy.spatial import distance
+import sys
 
 class Node:
     def __init__(self, name):
@@ -49,6 +50,7 @@ class Tree:
 			self.count_vertices_and_edges_wrap(root.right)
 		if root.left != None and root.right != None:
 			root.num_edges = root.left.num_edges + root.right.num_edges + root.num_edges
+			print root.name, root.num_edges
 	def compute_density(self,root):
 		if root.left is None and root.right is None:
 			return 
@@ -61,7 +63,7 @@ class Tree:
 		if root is None:
 			return
 		if root.density > min_density:
-			print root.vertices
+			print "Community Detected:",root.vertices
 		else:
 			self.extract_sub_graph(root.left,min_density)
 			self.extract_sub_graph(root.right,min_density)
@@ -84,8 +86,17 @@ def SetUnion(x,y):
     y.parent = r
     r.vertices= r.vertices.union(x.vertices,y.vertices)        
     return r
+<<<<<<< HEAD
+
+if(len(sys.argv)>1):
+	graph_file = open(sys.argv[1])	
+else:
+	print "Please enter graph file as argument"
+	#graph_file = open("./amazon/amazon.graph.small")
+=======
         
 graph_file = open("/home/abhishek/github_repo/CSC591_Community_Detection/amazon/amazon.graph.small")
+>>>>>>> 83b58d34225d50c91d868a88ec0f64dc3874be34
 
 edges = graph_file.read().splitlines()
 
@@ -116,7 +127,7 @@ adj_matrix = A.todense()
 M = np.zeros(adj_matrix.shape)
 
 row, col = adj_matrix.shape
-print "done0"
+#print "done"
 for x in xrange(0,row):
     for y in xrange(x,col):
         M[x][y] = round((1 - distance.cosine(adj_matrix[:,x], adj_matrix[:,y])),2)        
@@ -127,7 +138,7 @@ for (x,y), value in np.ndenumerate(M):
         tuples.append(((x+1,y+1),value))
 
 C = sorted(tuples, key=lambda x: x[1])
-print "done"
+#print "done"
 t = np.count_nonzero(adj_matrix)
 print(t)
 C = C[-t:]
