@@ -1,4 +1,5 @@
 # CSC591_Community_Detection
+------
 Dense subgraph extracation from sparse graph paper implementation
 Implemented the paper which detects dense sub graph in a sparse graph.
 Implemented the code base in python.
