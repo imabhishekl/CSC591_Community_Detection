@@ -1,7 +1,16 @@
+"""
+	Name :: UnityId
+	Shruti Kuber :: skuber
+	Abhishek Lingwal :: aslingwa
+	Raunaq Saxena :: rsaxena
+"""
+
 import numpy as np
 import networkx as nx
 from scipy.spatial import distance
 import sys
+
+#Structure for Nodes of Dendogram
 
 class Node:
     def __init__(self, name):
@@ -17,22 +26,30 @@ class Node:
 class Tree:
 	def __init__(self):
 		self.root = None
+
+	#Find Lowest Common Ancestor
 	def findLCA_Node(self,src_node,dest_node):
 		while src_node is not None:
 			if dest_node.name in src_node.vertices:
 				return src_node
 			src_node = src_node.parent
 		return None
+
 	def print_Tree(self,root):
 		if root==None:
 			return
 		print(root.vertices)
 		self.print_Tree(root.left)
 		self.print_Tree(root.right)
+
 	def print_nodes(self,nodes):
 		for i in range(0,len(nodes)):
 			print(nodes[i].name,nodes[i].parent.name)
+
 	def count_vertices_and_edges(self,edges_list,nodes_list):		
+		"""
+		Count all edges of nodes in a dendogram
+		"""
 		for edge in edges_list:
 			lca_node = None
 			#print edge[0],edge[1]
@@ -44,14 +61,22 @@ class Tree:
 			#print 'LCA:',lca_node
 			if lca_node is not None:
 				lca_node.num_edges = lca_node.num_edges + 1
+
 	def count_vertices_and_edges_wrap(self,root):
+		"""
+		Summation of number of edges of children to parent
+		"""
 		if root.left != None and root.right != None:
 			self.count_vertices_and_edges_wrap(root.left)
 			self.count_vertices_and_edges_wrap(root.right)
 		if root.left != None and root.right != None:
 			root.num_edges = root.left.num_edges + root.right.num_edges + root.num_edges
-			print root.name, root.num_edges
+			#print root.name, root.num_edges
+
 	def compute_density(self,root):
+		"""
+		Computing Density of an undirected Graph
+		"""
 		if root.left is None and root.right is None:
 			return 
 		total_vertices = float(len(root.vertices))
@@ -59,7 +84,12 @@ class Tree:
 		root.density = root.num_edges/max_vertices
 		self.compute_density(root.left)
 		self.compute_density(root.right)
+
 	def extract_sub_graph(self,root,min_density):
+		"""
+		Print nodes whose density is greater than Density threshold ,ie , min_density
+		For other nodes look test the densities of their sub graphs/children
+		"""
 		if root is None:
 			return
 		if root.density > min_density:
@@ -78,6 +108,7 @@ def SetFind(r):
 		r = r.parent
 	return r
 
+# Building a new Node as Union of two sets
 def SetUnion(x,y):
     r = Node("P"+ str(x.name) + str(y.name))
     r.left = x
@@ -86,17 +117,14 @@ def SetUnion(x,y):
     y.parent = r
     r.vertices= r.vertices.union(x.vertices,y.vertices)        
     return r
-<<<<<<< HEAD
 
 if(len(sys.argv)>1):
 	graph_file = open(sys.argv[1])	
 else:
 	print "Please enter graph file as argument"
 	#graph_file = open("./amazon/amazon.graph.small")
-=======
-        
-graph_file = open("/home/abhishek/github_repo/CSC591_Community_Detection/amazon/amazon.graph.small")
->>>>>>> 83b58d34225d50c91d868a88ec0f64dc3874be34
+
+#Build Edges and Vertices List from file
 
 edges = graph_file.read().splitlines()
 
@@ -127,12 +155,15 @@ adj_matrix = A.todense()
 M = np.zeros(adj_matrix.shape)
 
 row, col = adj_matrix.shape
-#print "done"
+
+#Building similarity function matrix, ie, Cosine Function matrix of all Column Vectors
+
 for x in xrange(0,row):
     for y in xrange(x,col):
         M[x][y] = round((1 - distance.cosine(adj_matrix[:,x], adj_matrix[:,y])),2)        
 
 tuples = []    
+#Considering only non zero values
 for (x,y), value in np.ndenumerate(M):
     if value!=0 and x!=y:
         tuples.append(((x+1,y+1),value))
@@ -144,10 +175,18 @@ print(t)
 C = C[-t:]
 
 #print(C)
-print 'C done'
+#print 'C done'
 
 ln = len(C)
 ln = ln-1
+
+"""
+* Building basic data structure to enable efficient implementation of algorithm
+
+* Building a Tree from the largest cosine to smallest values
+
+* Larger values imply lesser similarity, thus using a bottom up approach and building from low to high connected nodes
+"""
 
 nodes =dict()
 tree = Tree()
@@ -171,10 +210,14 @@ for i in range(ln, -1, -1):
     if ri.name != rj.name:
         tree.root = SetUnion(ri,rj)
         
-#tree.print_Tree(tree.root)
-
-#nodes = set(nodes)
+"""
+* Below Flow as Algorithm Specified in paper: 'Dense Subgraph Extraction with Application to  Community Detection'
+"""
+#Counting number of vertices and Edges
 tree.count_vertices_and_edges(G.edges(),nodes)
+#Summing up number of edges of children to parent
 tree.count_vertices_and_edges_wrap(tree.root)
+#Computing density of Tree Nodes
 tree.compute_density(tree.root)
-tree.extract_sub_graph(tree.root,0.75)
+#Filtering Nodes as Per Density Threshold
+tree.extract_sub_graph(tree.root,0.5)
