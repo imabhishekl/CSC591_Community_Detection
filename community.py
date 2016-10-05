@@ -118,10 +118,12 @@ def SetUnion(x,y):
     r.vertices= r.vertices.union(x.vertices,y.vertices)        
     return r
 
-if(len(sys.argv)>1):
+min_threshold = 0.75
+if(len(sys.argv)>2):
 	graph_file = open(sys.argv[1])	
+	min_threshold = float(sys.argv[2])
 else:
-	print "Please enter graph file as argument"
+	print "Please enter graph file and density threshold as argument"
 	#graph_file = open("./amazon/amazon.graph.small")
 
 #Build Edges and Vertices List from file
@@ -129,7 +131,7 @@ else:
 edges = graph_file.read().splitlines()
 
 vertices = []
-print "Create vertex"
+#print "Create vertex"
 for edge in edges[1:]:
     vert = edge.split(" ")
     if vert[0] not in vertices:
@@ -137,7 +139,7 @@ for edge in edges[1:]:
     if vert[1] not in vertices:
         vertices.append(int(vert[1]))
 
-print "Done creating edges"
+#print "Done creating edges"
 
 edges = map(lambda x:(int(x.split(" ")[0]),int(x.split(" ")[1])),edges)
 
@@ -171,7 +173,7 @@ for (x,y), value in np.ndenumerate(M):
 C = sorted(tuples, key=lambda x: x[1])
 #print "done"
 t = np.count_nonzero(adj_matrix)
-print(t)
+#print(t)
 C = C[-t:]
 
 #print(C)
@@ -220,4 +222,4 @@ tree.count_vertices_and_edges_wrap(tree.root)
 #Computing density of Tree Nodes
 tree.compute_density(tree.root)
 #Filtering Nodes as Per Density Threshold
-tree.extract_sub_graph(tree.root,0.5)
+tree.extract_sub_graph(tree.root,min_threshold)
