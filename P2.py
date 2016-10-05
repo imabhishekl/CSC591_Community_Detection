@@ -1,5 +1,6 @@
 import numpy as np
 import networkx as nx
+import sys
 from scipy.spatial import distance
 
 class Node:
@@ -94,7 +95,11 @@ def SetUnion(x,y):
         #r.vertices.extend(y.vertices)
     return r
         
-graph_file = open("/home/abhishek/github_repo/CSC591_Community_Detection/amazon/amazon.graph.small")
+if len(sys.argv) != 2:
+	print "Please pass command line argument for file name"
+	exit(0)
+
+graph_file = open(sys.argv[1])
 
 edges = graph_file.read().splitlines()
 
@@ -172,5 +177,4 @@ tree.root.parent = None
 tree.count_vertices_and_edges(G.edges(),nodes)
 tree.count_vertices_and_edges_wrap(tree.root)
 tree.compute_density(tree.root)
-print "Tree:" + str(tree.root.num_edges)
 tree.extract_sub_graph(tree.root,0.75)
