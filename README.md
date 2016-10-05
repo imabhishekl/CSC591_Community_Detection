@@ -6,9 +6,10 @@ Implemented the code base in python.
 Please run the code as follows.
 
 ```
-python community.py <input_graph_file>
+python community.py <input_graph_file> <density_min>
 ```
 input file are present in amazon folder for reference.
+desity min is the threshold density for dense graph detection.
 
 ## It requires the following package to run 
 * networkx
