@@ -5,7 +5,7 @@ Implemented the code base in python.
 Please run the code as follows.
 
 ```
-python dense_subgraph_detect <input_graph_file>
+python community.py <input_graph_file>
 ```
 input file are present in amazon folder for reference.
 
