@@ -38,14 +38,14 @@ class Tree:
 	def count_vertices_and_edges(self,edges_list,nodes_list):
 		for edge in edges_list:
 			src_node = filter(lambda x: x.name == edge[0], nodes_list)
-			dst_node = filter(lambda x: x.name == edge[1],nodes_list)
+			dst_node = filter(lambda x: x.name == edge[1], nodes_list)
 			lca_node = None
 			if len(src_node)!=0 and len(dst_node)!=0:
 				lca_node = self.findLCA_Node( src_node[0], dst_node[0] )
 			#lca_node = self.findLCA_Node(next((x for x in nodes_list if x.name == edge[0]),None),next((y for y in nodes_list if y.name == edge[1]),None))
 			if lca_node is not None:
 				lca_node.num_edges = lca_node.num_edges + 1
-				print "lca:" + str(lca_node.num_edges)
+				#print "lca:" + str(lca_node.num_edges)
 
 	def count_vertices_and_edges_wrap(self,root):
 		if root.left != None and root.right != None:
@@ -58,7 +58,6 @@ class Tree:
 		if root.left is None and root.right is None:
 			return 
 		total_vertices = float(len(root.vertices))
-		print "compute : " + str(total_vertices)
 		max_vertices = total_vertices*(total_vertices - 1)/2
 		root.density = root.num_edges/max_vertices
 
@@ -68,7 +67,6 @@ class Tree:
 	def extract_sub_graph(self,root,min_density):
 		if root is None:
 			return
-		print root.density
 		if root.density > min_density:
 			print root.vertices
 		else:
@@ -127,7 +125,6 @@ adj_matrix = A.todense()
 M = np.zeros(adj_matrix.shape)
 
 row, col = adj_matrix.shape
-print "done0"
 for x in xrange(0,row):
     for y in xrange(x,col):
         M[x][y] = round((1 - distance.cosine(adj_matrix[:,x], adj_matrix[:,y])),2)        
@@ -144,7 +141,6 @@ print(t)
 C = C[-t:]
 
 #print(C)
-print 'C done'
 
 ln = len(C)
 ln = ln-1
@@ -176,4 +172,5 @@ tree.root.parent = None
 tree.count_vertices_and_edges(G.edges(),nodes)
 tree.count_vertices_and_edges_wrap(tree.root)
 tree.compute_density(tree.root)
-tree.extract_sub_graph(tree.root,0.5)
+print "Tree:" + str(tree.root.num_edges)
+tree.extract_sub_graph(tree.root,0.75)
