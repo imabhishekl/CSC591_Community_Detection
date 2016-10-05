@@ -13,7 +13,6 @@ class Node:
         self.vertices = set()
         self.density = 0
         
-        
 class Tree:
 	def __init__(self):
 		self.root = None
@@ -69,7 +68,7 @@ class Tree:
 		if root is None:
 			return
 		if root.density > min_density:
-			print root.vertices
+			print "Community detect with following vertices:" + str(root.vertices)
 		else:
 			self.extract_sub_graph(root.left,min_density)
 			self.extract_sub_graph(root.right,min_density)
@@ -104,15 +103,13 @@ graph_file = open(sys.argv[1])
 edges = graph_file.read().splitlines()
 
 vertices = []
-print "Create vertex"
+print "Creating Graph........."
 for edge in edges:
     vert = edge.split(" ")
     if vert[0] not in vertices:
         vertices.append(int(vert[0]))
     if vert[1] not in vertices:
         vertices.append(int(vert[1]))
-
-print "Done creating edges"
 
 edges = map(lambda x:(int(x.split(" ")[0]),int(x.split(" ")[1])),edges)
 
@@ -123,11 +120,13 @@ G.add_nodes_from(vertices)
 #                 (7,1),(7,6),(7,5),(7,4),(4,5),(1,6),(1,5),(5,6),(5,16),(6,17),(17,18),(16,15),(16,14),(15,14)])
 
 G.add_edges_from(edges)
-
+print "Done creating graph"
 A = nx.adjacency_matrix(G)
 adj_matrix = A.todense()
 
 M = np.zeros(adj_matrix.shape)
+
+print "Creating cosine data........"
 
 row, col = adj_matrix.shape
 for x in xrange(0,row):
@@ -140,11 +139,10 @@ for (x,y), value in np.ndenumerate(M):
         tuples.append(((x+1,y+1),value))
    
 C = sorted(tuples, key=lambda x: x[1])
-print "done"
 t = np.count_nonzero(adj_matrix)
-print(t)
+#print(t)
 C = C[-t:]
-
+print "Done creating cosine data"
 #print(C)
 
 ln = len(C)
@@ -152,6 +150,8 @@ ln = ln-1
 
 nodes = []
 tree = Tree()
+
+print "Creating dendogram data........"
 
 for i in range(ln, -1, -1):
     vertices, value = C[i]
@@ -172,9 +172,12 @@ for i in range(ln, -1, -1):
     if ri.name != rj.name:
         tree.root = SetUnion(ri,rj)
         
+print "Done creating dendogram."
 #tree.print_Tree(tree.root)
+print "Start dendogram processing........"
 tree.root.parent = None
 tree.count_vertices_and_edges(G.edges(),nodes)
 tree.count_vertices_and_edges_wrap(tree.root)
 tree.compute_density(tree.root)
 tree.extract_sub_graph(tree.root,0.75)
+print "Done."
