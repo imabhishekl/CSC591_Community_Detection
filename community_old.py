@@ -26,6 +26,7 @@ class Node:
 class Tree:
 	def __init__(self):
 		self.root = None
+
 	#Find Lowest Common Ancestor
 	def findLCA_Node(self,src_node,dest_node):
 		while src_node is not None:
@@ -33,15 +34,18 @@ class Tree:
 				return src_node
 			src_node = src_node.parent
 		return None
+
 	def print_Tree(self,root):
 		if root==None:
 			return
 		print(root.vertices)
 		self.print_Tree(root.left)
 		self.print_Tree(root.right)
+
 	def print_nodes(self,nodes):
 		for i in range(0,len(nodes)):
 			print(nodes[i].name,nodes[i].parent.name)
+
 	def count_vertices_and_edges(self,edges_list,nodes_list):		
 		"""
 		Count all edges of nodes in a dendogram
@@ -57,6 +61,7 @@ class Tree:
 			#print 'LCA:',lca_node
 			if lca_node is not None:
 				lca_node.num_edges = lca_node.num_edges + 1
+
 	def count_vertices_and_edges_wrap(self,root):
 		"""
 		Summation of number of edges of children to parent
@@ -67,6 +72,7 @@ class Tree:
 		if root.left != None and root.right != None:
 			root.num_edges = root.left.num_edges + root.right.num_edges + root.num_edges
 			#print root.name, root.num_edges
+
 	def compute_density(self,root):
 		"""
 		Computing Density of an undirected Graph
@@ -78,6 +84,7 @@ class Tree:
 		root.density = root.num_edges/max_vertices
 		self.compute_density(root.left)
 		self.compute_density(root.right)
+
 	def extract_sub_graph(self,root,min_density):
 		"""
 		Print nodes whose density is greater than Density threshold ,ie , min_density
@@ -86,9 +93,7 @@ class Tree:
 		if root is None:
 			return
 		if root.density > min_density:
-			for elem in list(root.vertices):
-				print elem,
-			print ''
+			print "Community Detected:",root.vertices
 		else:
 			self.extract_sub_graph(root.left,min_density)
 			self.extract_sub_graph(root.right,min_density)
@@ -136,7 +141,7 @@ for edge in edges[1:]:
 
 #print "Done creating edges"
 
-edges = map(lambda x:(int(x.split(" ")[0]),int(x.split(" ")[1])),edges[1:])
+edges = map(lambda x:(int(x.split(" ")[0]),int(x.split(" ")[1])),edges)
 
 G = nx.Graph()
 #nodes = list(range(1,19))
@@ -157,15 +162,13 @@ row, col = adj_matrix.shape
 
 for x in xrange(0,row):
     for y in xrange(x,col):
-        M[x][y] = (1 - distance.cosine(adj_matrix[:,x], adj_matrix[:,y]))       
+        M[x][y] = round((1 - distance.cosine(adj_matrix[:,x], adj_matrix[:,y])),2)        
 
-tuples = []
-#On basis of zero graph
-min_value = 1 if min(vertices)>0 else 0
+tuples = []    
 #Considering only non zero values
 for (x,y), value in np.ndenumerate(M):
     if value!=0 and x!=y:
-        tuples.append(((x+min_value,y+min_value),value))
+        tuples.append(((x+1,y+1),value))
 
 C = sorted(tuples, key=lambda x: x[1])
 #print "done"
@@ -178,7 +181,6 @@ C = C[-t:]
 
 ln = len(C)
 ln = ln-1
-#print 'Size C:',ln
 
 """
 * Building basic data structure to enable efficient implementation of algorithm
@@ -189,11 +191,10 @@ ln = ln-1
 """
 
 nodes =dict()
-root_nodes = set()
 tree = Tree()
 
-for index in range(ln, -1, -1):
-    vertices, value = C[index]
+for i in range(ln, -1, -1):
+    vertices, value = C[i]
     i,j = vertices
     if nodes.__contains__(i) is False:
         a = Node(i)
@@ -208,24 +209,17 @@ for index in range(ln, -1, -1):
     j = nodes[j]
     ri = SetFind(i)
     rj = SetFind(j)
-    if ri.vertices != rj.vertices:
-		temp_root = SetUnion(ri,rj)
-		root_nodes.add(temp_root)
-
-#print tree.root.vertices, len(tree.root.vertices)
-root_nodes = filter( lambda entry: entry.parent==None, list(root_nodes))
-
+    if ri.name != rj.name:
+        tree.root = SetUnion(ri,rj)
+        
 """
 * Below Flow as Algorithm Specified in paper: 'Dense Subgraph Extraction with Application to  Community Detection'
 """
-
-for temp_roots in root_nodes:
-	tree.root = temp_roots
-	#Counting number of vertices and Edges
-	tree.count_vertices_and_edges(G.edges(),nodes)
-	#Summing up number of edges of children to parent
-	tree.count_vertices_and_edges_wrap(tree.root)
-	#Computing density of Tree Nodes
-	tree.compute_density(tree.root)
-	#Filtering Nodes as Per Density Threshold
-	tree.extract_sub_graph(tree.root,min_threshold)
+#Counting number of vertices and Edges
+tree.count_vertices_and_edges(G.edges(),nodes)
+#Summing up number of edges of children to parent
+tree.count_vertices_and_edges_wrap(tree.root)
+#Computing density of Tree Nodes
+tree.compute_density(tree.root)
+#Filtering Nodes as Per Density Threshold
+tree.extract_sub_graph(tree.root,min_threshold)
